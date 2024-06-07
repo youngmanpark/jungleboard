@@ -45,9 +45,9 @@ public class MemberController {
         return ResponseEntity.ok("회원 정보가 수정되었습니다.");
     }
 
-    @DeleteMapping("/delete")
-    public ResponseEntity<String> deleteMember(@RequestBody MemberRequestDto.DELETE delete) {
-        memberService.deleteMember(delete);
+    @DeleteMapping("/delete/{email}")
+    public ResponseEntity<String> deleteMember(@PathVariable String email, @RequestBody MemberRequestDto.DELETE delete) {
+        memberService.deleteMember(email, delete);
         return ResponseEntity.ok("회원 탈퇴가 완료되었습니다.");
     }
 
