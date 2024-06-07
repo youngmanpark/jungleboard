@@ -16,7 +16,7 @@ public interface MemberService {
 
     public void updateMemberRole(String email, MemberRequestDto.UPDATE update);
 
-    public void deleteMember(MemberRequestDto.DELETE delete);
+    public void deleteMember(String email, MemberRequestDto.DELETE delete);
 
     public MemberResponseDto.READ getMember(MemberRequestDto.FIND find);
 

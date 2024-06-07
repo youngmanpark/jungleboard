@@ -4,9 +4,11 @@ import com.Jungle.jungleboard.domain.member.dto.MemberRequestDto;
 import com.Jungle.jungleboard.domain.member.dto.MemberResponseDto;
 import com.Jungle.jungleboard.domain.member.entity.Member;
 import com.Jungle.jungleboard.domain.member.repository.MemberRepository;
+import com.Jungle.jungleboard.global.auth.jwt.JwtProvider;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,6 +25,10 @@ public class MemberServiceImpl implements MemberService {
 
     private final MemberRepository memberRepository;
 
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
+
+    private final JwtProvider jwtProvider;
+
     @Override
     public void createMember(MemberRequestDto.CREATE create) {
         Optional<Member> member = memberRepository.findByEmailAndUsername(create.getEmail(), create.getUsername());
@@ -30,7 +36,7 @@ public class MemberServiceImpl implements MemberService {
             throw new IllegalArgumentException("이미 존재하는 회원입니다.");
 
 
-        memberRepository.save(new Member(create.getEmail(), create.getPassword(), create.getUsername(), ROLE_USER, "N"));
+        memberRepository.save(new Member(create.getEmail(), bCryptPasswordEncoder.encode(create.getPassword()), create.getUsername(), ROLE_USER, "N"));
     }
 
     @Override
@@ -61,11 +67,11 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public void deleteMember(MemberRequestDto.DELETE delete) {
-        Member member = memberRepository.findByEmailAndDelYn(delete.getEmail(), "N")
+    public void deleteMember(String email, MemberRequestDto.DELETE delete) {
+        Member member = memberRepository.findByEmailAndDelYn(email, "N")
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
 
-        if (!isPasswordMatch(member.getPassword(), delete.getPassword()))
+        if (isNotPasswordMatch(member.getPassword(), delete.getPassword()))
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
 
         member.delete();
@@ -99,14 +105,15 @@ public class MemberServiceImpl implements MemberService {
         Member member = memberRepository.findMemberByEmailAndDelYn(login.getEmail(), "N")
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
 
-        if (!isPasswordMatch(member.getPassword(), login.getPassword()))
+        if (isNotPasswordMatch(member.getPassword(), login.getPassword()))
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
-
+        System.out.println("로그인후" + jwtProvider.createToken(member.getEmail()));
+        String token = jwtProvider.createToken(String.format("%s:%s", member.getEmail(), member.getRole()));
         return MemberResponseDto.READ.builder()
                 .email(member.getEmail())
                 .username(member.getUsername())
                 .role(String.valueOf(member.getRole()))
-                .accessToken("accessToken") //jwt 관련 구현시 변경
+                .accessToken(token) //jwt 관련 구현시 변경
                 .build();
     }
 
@@ -121,7 +128,7 @@ public class MemberServiceImpl implements MemberService {
         return null;
     }
 
-    private boolean isPasswordMatch(String requestPassword, String getPassword) {
-        return requestPassword.equals(getPassword);
+    private boolean isNotPasswordMatch(String requestPassword, String getPassword) {
+        return !bCryptPasswordEncoder.matches(requestPassword, getPassword);
     }
 }
