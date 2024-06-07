@@ -1,5 +1,6 @@
 package com.Jungle.jungleboard.domain.member.entity;
 
+import com.Jungle.jungleboard.domain.member.dto.MemberRequestDto;
 import com.Jungle.jungleboard.global.common.Role;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -41,12 +42,17 @@ public class Member {
         this.delYn = delYn;
     }
 
-    public void update(String email, String password, String username, Role role, String delYn) {
-        this.email = email;
-        this.password = password;
-        this.username = username;
-        this.role = role;
-        this.delYn = delYn;
+
+    public void updateName(MemberRequestDto.UPDATE update) {
+        this.username = update.getUsername();
+    }
+
+    public void updatePassword(MemberRequestDto.UPDATE update) {
+        this.password = update.getPassword();
+    }
+
+    public void updateRole(MemberRequestDto.UPDATE update) {
+        this.role = Role.valueOf(update.getRole());
     }
 
     public void delete() {
