@@ -1,37 +1,24 @@
 package com.Jungle.jungleboard.domain.member.repository;
 
 import com.Jungle.jungleboard.domain.member.entity.Member;
-import lombok.NonNull;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+import org.springframework.data.repository.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
-@Repository
-public interface MemberRepository extends JpaRepository<Member, Long>{
-
-    Optional<Member> findByIdAndDelYn(Long id, String delYn);
+public interface MemberRepository extends Repository<Member, Long> {
 
     Optional<Member> findByEmailAndDelYn(String email, String delYn);
 
     Optional<Member> findByUsernameAndDelYn(String username, String delYn);
 
-    boolean existsByEmailAndDelYn(String email, String delYn);
+    Optional<Member> findMemberByEmailAndDelYn(String email, String n);
 
-    boolean existsByUsernameAndDelYn(String username, String delYn);
+    List<Member> findAllByDelYn(String n);
 
-    @NonNull
-    Optional<Member> findById(@NonNull Long id);
+    Optional<Member> findByEmailAndUsername(String email, String username);
 
-    Optional<Member> findByEmail(String email);
-
-    Optional<Member> findByUsername(String username);
-
-    boolean existsByEmail(String email);
-
-    boolean existsByUsername(String username);
-
-    boolean existsById(@NonNull Long id);
+    void save(Member member);
 
 
 }
