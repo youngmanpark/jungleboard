@@ -21,10 +21,12 @@ public class MemberResponseDto {
 
         private String role;
 
+        private String accessToken;
+
+
     }
 
     @Getter
-    @Builder
     @AllArgsConstructor
     @NoArgsConstructor
     public static class adminREAD {

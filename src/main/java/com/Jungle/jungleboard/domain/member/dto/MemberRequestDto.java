@@ -2,15 +2,12 @@ package com.Jungle.jungleboard.domain.member.dto;
 
 import com.Jungle.jungleboard.global.common.Role;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 public class MemberRequestDto {
 
     @Getter
-    @Builder
-    @AllArgsConstructor
     @NoArgsConstructor
     public static class CREATE {
 
@@ -25,8 +22,6 @@ public class MemberRequestDto {
     }
 
     @Getter
-    @Builder
-    @AllArgsConstructor
     @NoArgsConstructor
     public static class UPDATE {
 
@@ -39,8 +34,6 @@ public class MemberRequestDto {
     }
 
     @Getter
-    @Builder
-    @AllArgsConstructor
     @NoArgsConstructor
     public static class CONDITION {
 
@@ -52,8 +45,6 @@ public class MemberRequestDto {
     }
 
     @Getter
-    @Builder
-    @AllArgsConstructor
     @NoArgsConstructor
     public static class LOGIN {
 
@@ -64,8 +55,6 @@ public class MemberRequestDto {
     }
 
     @Getter
-    @Builder
-    @AllArgsConstructor
     @NoArgsConstructor
     public static class DELETE {
 
@@ -76,9 +65,8 @@ public class MemberRequestDto {
     }
 
     @Getter
-    @Builder
-    @AllArgsConstructor
     @NoArgsConstructor
+    @AllArgsConstructor
     public static class FIND {
 
         private String email;
