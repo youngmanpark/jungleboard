@@ -10,13 +10,17 @@ public interface MemberService {
 
     public void createMember(MemberRequestDto.CREATE create);
 
-    public void updateMember(MemberRequestDto.UPDATE update);
+    public void updateMemberName(String email, MemberRequestDto.UPDATE update);
 
-    public void deleteMember(Long userId);
+    public void updateMemberPassword(String email, MemberRequestDto.UPDATE update);
 
-    public MemberResponseDto.READ getMember(Long userId);
+    public void updateMemberRole(String email, MemberRequestDto.UPDATE update);
 
-    public List<MemberResponseDto.READ> getMember(MemberRequestDto.CONDITION condition);
+    public void deleteMember(MemberRequestDto.DELETE delete);
+
+    public MemberResponseDto.READ getMember(MemberRequestDto.FIND find);
+
+    public List<MemberResponseDto.READ> getAllMembers();
 
     public MemberResponseDto.READ login(MemberRequestDto.LOGIN userRequestDto);
 
