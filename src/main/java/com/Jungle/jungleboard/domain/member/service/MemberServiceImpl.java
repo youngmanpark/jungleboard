@@ -27,7 +27,6 @@ public class MemberServiceImpl implements MemberService {
 
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
-    private final JwtProvider jwtProvider;
 
     @Override
     public void createMember(MemberRequestDto.CREATE create) {
@@ -40,8 +39,8 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public void updateMemberName(String email, MemberRequestDto.UPDATE update) {
-        Member member = memberRepository.findMemberByEmailAndDelYn(email, "N")
+    public void updateMemberName(Long id, MemberRequestDto.UPDATE update) {
+        Member member = memberRepository.findMemberByIdAndDelYn(id, "N")
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
 
         if (memberRepository.findByUsernameAndDelYn(update.getUsername(), "N").isPresent())
@@ -51,27 +50,27 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public void updateMemberPassword(String email, MemberRequestDto.UPDATE update) {
-        Member member = memberRepository.findMemberByEmailAndDelYn(email, "N")
+    public void updateMemberPassword(Long id, MemberRequestDto.UPDATE update) {
+        Member member = memberRepository.findMemberByIdAndDelYn(id, "N")
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
 
-        member.updateName(update);
+        member.updatePassword(update);
     }
 
     @Override
-    public void updateMemberRole(String email, MemberRequestDto.UPDATE update) {
-        Member member = memberRepository.findMemberByEmailAndDelYn(email, "N")
+    public void updateMemberRole(Long id, MemberRequestDto.UPDATE update) {
+        Member member = memberRepository.findMemberByIdAndDelYn(id, "N")
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
 
-        member.updateName(update);
+        member.updateRole(update);
     }
 
     @Override
-    public void deleteMember(String email, MemberRequestDto.DELETE delete) {
-        Member member = memberRepository.findByEmailAndDelYn(email, "N")
+    public void deleteMember(Long id, MemberRequestDto.DELETE delete) {
+        Member member = memberRepository.findMemberByIdAndDelYn(id, "N")
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
 
-        if (isNotPasswordMatch(member.getPassword(), delete.getPassword()))
+        if (!bCryptPasswordEncoder.matches(delete.getPassword(), member.getPassword()))
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
 
         member.delete();
@@ -83,6 +82,7 @@ public class MemberServiceImpl implements MemberService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원 입니다."));
 
         return MemberResponseDto.READ.builder()
+                .userId(member.getId())
                 .email(member.getEmail())
                 .username(member.getUsername())
                 .role(String.valueOf(member.getRole()))
@@ -93,6 +93,7 @@ public class MemberServiceImpl implements MemberService {
     public List<MemberResponseDto.READ> getAllMembers() {
         return memberRepository.findAllByDelYn("N").stream()
                 .map(member -> MemberResponseDto.READ.builder()
+                        .userId(member.getId())
                         .email(member.getEmail())
                         .username(member.getUsername())
                         .role(String.valueOf(member.getRole()))
@@ -105,15 +106,17 @@ public class MemberServiceImpl implements MemberService {
         Member member = memberRepository.findMemberByEmailAndDelYn(login.getEmail(), "N")
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
 
-        if (isNotPasswordMatch(member.getPassword(), login.getPassword()))
+        if (!bCryptPasswordEncoder.matches(login.getPassword(), member.getPassword()))
             throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
-        System.out.println("로그인후" + jwtProvider.createToken(member.getEmail()));
-        String token = jwtProvider.createToken(String.format("%s:%s", member.getEmail(), member.getRole()));
+
+        String token = JwtProvider.generateToken(member.getEmail(), member.getRole());
+
         return MemberResponseDto.READ.builder()
+                .userId(member.getId())
                 .email(member.getEmail())
                 .username(member.getUsername())
                 .role(String.valueOf(member.getRole()))
-                .accessToken(token) //jwt 관련 구현시 변경
+                .accessToken(token)
                 .build();
     }
 
@@ -128,7 +131,4 @@ public class MemberServiceImpl implements MemberService {
         return null;
     }
 
-    private boolean isNotPasswordMatch(String requestPassword, String getPassword) {
-        return !bCryptPasswordEncoder.matches(requestPassword, getPassword);
-    }
 }
