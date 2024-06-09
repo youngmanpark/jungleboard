@@ -21,4 +21,7 @@ public interface MemberRepository extends Repository<Member, Long> {
     void save(Member member);
 
 
+    Optional<Member> findMemberByUsernameAndDelYn(String username, String DelYn);
+
+    Optional<Member> findMemberByIdAndDelYn(Long id, String delYn);
 }
