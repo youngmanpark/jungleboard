@@ -1,52 +1,40 @@
 package com.Jungle.jungleboard.global.auth.jwt;
 
+import com.Jungle.jungleboard.global.common.Role;
 import io.jsonwebtoken.*;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
-import javax.crypto.spec.SecretKeySpec;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @Component
-@Service
+@RequiredArgsConstructor
 public class JwtProvider {
-    private final String secretKey;
-    private final long expirationHours;
-    private final String issuer;
-    private String salt;
-
-
-    //    private static final String SECRET_KEY= "abcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcd";
+    private static final String SECRET_KEY = "abcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcdabcd";
     public final static long ACCESS_TOKEN_VALIDATION_SECOND = 1000L * 60 * 60 * 12; //12시간
+    private static final String AUTHORITIES_KEY = "auth";
 
-
-//    private final UserDetailsService userDetailsService;
-
-//    @PostConstruct
-//    protected void init() {
-//        secretKey = Keys.hmacShaKeyFor(salt.getBytes(StandardCharsets.UTF_8));
-//    }
-
-    public JwtProvider(@Value("${jwt.secret.key}") String secretKey,
-                       @Value("${jwt.secret.expiration-hours}") long expirationHours,
-                       @Value("${jwt.secret.issuer}") String issuer) {
-        this.secretKey = secretKey;
-        this.expirationHours = expirationHours;
-        this.issuer = issuer;
-    }
+    private final UserDetailsService userDetailsService;
 
     //토큰 생성
-    public String createToken(String identity) {
+    public static String generateToken(String email, Role role) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("role", role);
         Date now = new Date();
         Date expiration = new Date(now.getTime() + ACCESS_TOKEN_VALIDATION_SECOND);
         return Jwts.builder()
-                .setSubject(identity)//jwt 토큰 제목
+                .setClaims(claims)
+                .setSubject(email)
                 .setIssuedAt(now)
                 .setExpiration(expiration)
-                .signWith(new SecretKeySpec(secretKey.getBytes(), SignatureAlgorithm.HS512.getJcaName()))
+                .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
                 .compact();
     }
 
@@ -55,7 +43,7 @@ public class JwtProvider {
         try {
             Jwts
                     .parser()
-                    .setSigningKey(secretKey)
+                    .setSigningKey(SECRET_KEY)
                     .build()
                     .parseClaimsJws(token)
                     .getBody()
@@ -68,7 +56,7 @@ public class JwtProvider {
         }
         return Jwts
                 .parser()
-                .setSigningKey(secretKey)
+                .setSigningKey(SECRET_KEY)
                 .build()
                 .parseClaimsJws(token)
                 .getBody()
@@ -76,10 +64,10 @@ public class JwtProvider {
     }
 
     //권한 정보 획득
-//    public Authentication getAuthentication(String token) {
-//        UserDetails userDetails = userDetailsService.loadUserByUsername(this.getIdentity(token));
-//        return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
-//    }
+    public Authentication getAuthentication(String token) {
+        UserDetails userDetails = userDetailsService.loadUserByUsername(this.getIdentity(token));
+        return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
+    }
 
     //token 검증
     public boolean validateToken(String token) {
@@ -89,11 +77,10 @@ public class JwtProvider {
                 return false;
             } else {
                 token = token.split(" ")[1].trim();
-                System.out.println("bearer검증 후" + token);
             }
-            Jws<Claims> claims = Jwts
+            Jwts
                     .parser()
-                    .setSigningKey(secretKey)
+                    .setSigningKey(SECRET_KEY)
                     .build()
                     .parseClaimsJws(token);
 
@@ -108,15 +95,6 @@ public class JwtProvider {
             log.info("JWT 토큰이 잘못되었습니다.");
         }
         return false;
-    }
-
-    public String validateTokenAndGetSubject(String token) {
-        return Jwts.parser()
-                .setSigningKey(secretKey.getBytes())
-                .build()
-                .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
     }
 
 }
