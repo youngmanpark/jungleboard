@@ -27,27 +27,27 @@ public class MemberController {
         return ResponseEntity.ok(memberService.login(login));
     }
 
-    @PutMapping("/update/name/{email}")
-    public ResponseEntity<String> updateMemberName(@PathVariable String email, @RequestBody MemberRequestDto.UPDATE update) {
-        memberService.updateMemberName(email, update);
+    @PutMapping("/update/name/{id}")
+    public ResponseEntity<String> updateMemberName(@PathVariable Long id, @RequestBody MemberRequestDto.UPDATE update) {
+        memberService.updateMemberName(id, update);
         return ResponseEntity.ok("회원 정보가 수정되었습니다.");
     }
 
-    @PutMapping("/update/password/{email}")
-    public ResponseEntity<String> updateMemberPassword(@PathVariable String email, @RequestBody MemberRequestDto.UPDATE update) {
-        memberService.updateMemberPassword(email, update);
+    @PutMapping("/update/password/{id}")
+    public ResponseEntity<String> updateMemberPassword(@PathVariable Long id, @RequestBody MemberRequestDto.UPDATE update) {
+        memberService.updateMemberPassword(id, update);
         return ResponseEntity.ok("회원 정보가 수정되었습니다.");
     }
 
-    @PutMapping("/update/role/{email}")
-    public ResponseEntity<String> updateMemberRole(@PathVariable String email, @RequestBody MemberRequestDto.UPDATE update) {
-        memberService.updateMemberRole(email, update);
+    @PutMapping("/update/role/{id}")
+    public ResponseEntity<String> updateMemberRole(@PathVariable Long id, @RequestBody MemberRequestDto.UPDATE update) {
+        memberService.updateMemberRole(id, update);
         return ResponseEntity.ok("회원 정보가 수정되었습니다.");
     }
 
-    @DeleteMapping("/delete/{email}")
-    public ResponseEntity<String> deleteMember(@PathVariable String email, @RequestBody MemberRequestDto.DELETE delete) {
-        memberService.deleteMember(email, delete);
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<String> deleteMember(@PathVariable Long id, @RequestBody MemberRequestDto.DELETE delete) {
+        memberService.deleteMember(id, delete);
         return ResponseEntity.ok("회원 탈퇴가 완료되었습니다.");
     }
 
