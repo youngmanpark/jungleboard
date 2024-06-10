@@ -29,7 +29,7 @@ public class MemberServiceImpl implements MemberService {
 
 
     @Override
-    public void createMember(MemberRequestDto.CREATE create) {
+    public void createMember(MemberRequestDto.M_CREATE create) {
         Optional<Member> member = memberRepository.findByEmailAndUsername(create.getEmail(), create.getUsername());
         if (member.isPresent())
             throw new IllegalArgumentException("이미 존재하는 회원입니다.");
@@ -39,7 +39,7 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public void updateMemberName(Long id, MemberRequestDto.UPDATE update) {
+    public void updateMemberName(Long id, MemberRequestDto.M_UPDATE update) {
         Member member = memberRepository.findMemberByIdAndDelYn(id, "N")
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
 
@@ -50,7 +50,7 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public void updateMemberPassword(Long id, MemberRequestDto.UPDATE update) {
+    public void updateMemberPassword(Long id, MemberRequestDto.M_UPDATE update) {
         Member member = memberRepository.findMemberByIdAndDelYn(id, "N")
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
 
@@ -58,7 +58,7 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public void updateMemberRole(Long id, MemberRequestDto.UPDATE update) {
+    public void updateMemberRole(Long id, MemberRequestDto.M_UPDATE update) {
         Member member = memberRepository.findMemberByIdAndDelYn(id, "N")
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
 
@@ -66,7 +66,7 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public void deleteMember(Long id, MemberRequestDto.DELETE delete) {
+    public void deleteMember(Long id, MemberRequestDto.M_DELETE delete) {
         Member member = memberRepository.findMemberByIdAndDelYn(id, "N")
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
 
@@ -77,7 +77,7 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public MemberResponseDto.READ getMember(MemberRequestDto.FIND find) {
+    public MemberResponseDto.READ getMember(MemberRequestDto.M_FIND find) {
         Member member = memberRepository.findByEmailAndDelYn(find.getEmail(), "N")
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원 입니다."));
 
@@ -127,7 +127,7 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public List<MemberResponseDto.adminREAD> adminGetMembers(MemberRequestDto.CONDITION userRequestDto) {
+    public List<MemberResponseDto.adminREAD> adminGetMembers(MemberRequestDto.M_CONDITION userRequestDto) {
         return null;
     }
 

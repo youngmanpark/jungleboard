@@ -25,7 +25,7 @@ public class BoardServiceImpl implements BoardService {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Override
-    public void createBoard(String username, BoardRequestDto.CREATE create) {
+    public void createBoard(String username, BoardRequestDto.B_CREATE create) {
 
         Member member = memberRepository.findMemberByUsernameAndDelYn(username, "N")
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 없습니다."));
@@ -40,7 +40,7 @@ public class BoardServiceImpl implements BoardService {
     }
 
     @Override
-    public void updateBoard(String username, Long id, BoardRequestDto.UPDATE update) {
+    public void updateBoard(String username, Long id, BoardRequestDto.B_UPDATE update) {
 
         memberRepository.findMemberByUsernameAndDelYn(username, "N")
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 없습니다."));
@@ -57,7 +57,7 @@ public class BoardServiceImpl implements BoardService {
     }
 
     @Override
-    public void deleteBoard(Long id, BoardRequestDto.DELETE delete) {
+    public void deleteBoard(Long id, BoardRequestDto.B_DELETE delete) {
         Board board = boardRepository.findBoardByIdAndDelYn(id, "N")
                 .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다."));
 

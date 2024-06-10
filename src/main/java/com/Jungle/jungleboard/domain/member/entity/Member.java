@@ -43,15 +43,15 @@ public class Member {
     }
 
 
-    public void updateName(MemberRequestDto.UPDATE update) {
+    public void updateName(MemberRequestDto.M_UPDATE update) {
         this.username = update.getUsername();
     }
 
-    public void updatePassword(MemberRequestDto.UPDATE update) {
+    public void updatePassword(MemberRequestDto.M_UPDATE update) {
         this.password = update.getPassword();
     }
 
-    public void updateRole(MemberRequestDto.UPDATE update) {
+    public void updateRole(MemberRequestDto.M_UPDATE update) {
         this.role = Role.valueOf(update.getRole());
     }
 

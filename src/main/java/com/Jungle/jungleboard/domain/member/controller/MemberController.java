@@ -17,7 +17,7 @@ public class MemberController {
     private final MemberService memberService;
 
     @PostMapping("/join")
-    public ResponseEntity<String> createMember(@RequestBody MemberRequestDto.CREATE create) {
+    public ResponseEntity<String> createMember(@RequestBody MemberRequestDto.M_CREATE create) {
         memberService.createMember(create);
         return ResponseEntity.ok("회원 가입이 완료되었습니다.");
     }
@@ -28,32 +28,32 @@ public class MemberController {
     }
 
     @PutMapping("/update/name/{id}")
-    public ResponseEntity<String> updateMemberName(@PathVariable Long id, @RequestBody MemberRequestDto.UPDATE update) {
+    public ResponseEntity<String> updateMemberName(@PathVariable Long id, @RequestBody MemberRequestDto.M_UPDATE update) {
         memberService.updateMemberName(id, update);
         return ResponseEntity.ok("회원 정보가 수정되었습니다.");
     }
 
     @PutMapping("/update/password/{id}")
-    public ResponseEntity<String> updateMemberPassword(@PathVariable Long id, @RequestBody MemberRequestDto.UPDATE update) {
+    public ResponseEntity<String> updateMemberPassword(@PathVariable Long id, @RequestBody MemberRequestDto.M_UPDATE update) {
         memberService.updateMemberPassword(id, update);
         return ResponseEntity.ok("회원 정보가 수정되었습니다.");
     }
 
     @PutMapping("/update/role/{id}")
-    public ResponseEntity<String> updateMemberRole(@PathVariable Long id, @RequestBody MemberRequestDto.UPDATE update) {
+    public ResponseEntity<String> updateMemberRole(@PathVariable Long id, @RequestBody MemberRequestDto.M_UPDATE update) {
         memberService.updateMemberRole(id, update);
         return ResponseEntity.ok("회원 정보가 수정되었습니다.");
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<String> deleteMember(@PathVariable Long id, @RequestBody MemberRequestDto.DELETE delete) {
+    public ResponseEntity<String> deleteMember(@PathVariable Long id, @RequestBody MemberRequestDto.M_DELETE delete) {
         memberService.deleteMember(id, delete);
         return ResponseEntity.ok("회원 탈퇴가 완료되었습니다.");
     }
 
     @GetMapping("/{email}")
     public ResponseEntity<?> getMemberDetailByEmail(@PathVariable String email) {
-        return ResponseEntity.ok(memberService.getMember(new MemberRequestDto.FIND(email)));
+        return ResponseEntity.ok(memberService.getMember(new MemberRequestDto.M_FIND(email)));
     }
 
     @GetMapping("/all")

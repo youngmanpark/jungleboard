@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 public class BoardRequestDto {
     @Getter
     @NoArgsConstructor
-    public static class CREATE {
+    public static class B_CREATE {
 
         private String title;
 
@@ -20,9 +20,7 @@ public class BoardRequestDto {
 
     @Getter
     @NoArgsConstructor
-    public static class UPDATE {
-
-        private Long id;
+    public static class B_UPDATE {
 
         private String title;
 
@@ -34,7 +32,7 @@ public class BoardRequestDto {
 
     @Getter
     @NoArgsConstructor
-    public static class CONDITION {
+    public static class B_CONDITION {
 
         private String title;
 
@@ -45,7 +43,7 @@ public class BoardRequestDto {
 
     @Getter
     @NoArgsConstructor
-    public static class DELETE {
+    public static class B_DELETE {
 
         private Long boardId;
 

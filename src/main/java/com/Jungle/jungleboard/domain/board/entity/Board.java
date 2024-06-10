@@ -51,7 +51,7 @@ public class Board {
         this.createdAt = LocalDateTime.now();
     }
 
-    public void updateBoard(BoardRequestDto.UPDATE update) {
+    public void updateBoard(BoardRequestDto.B_UPDATE update) {
         this.title = update.getTitle();
         this.content = update.getContent();
         this.updatedAt = LocalDateTime.now();

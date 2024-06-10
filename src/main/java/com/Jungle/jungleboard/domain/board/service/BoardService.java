@@ -7,11 +7,11 @@ import java.util.List;
 
 public interface BoardService {
 
-    void createBoard(String username, BoardRequestDto.CREATE create);
+    void createBoard(String username, BoardRequestDto.B_CREATE create);
 
-    public void updateBoard(String username, Long id, BoardRequestDto.UPDATE update);
+    public void updateBoard(String username, Long id, BoardRequestDto.B_UPDATE update);
 
-    public void deleteBoard(Long id, BoardRequestDto.DELETE delete);
+    public void deleteBoard(Long id, BoardRequestDto.B_DELETE delete);
 
     public BoardResponseDto.READ getBoard(Long id);
 

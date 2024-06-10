@@ -9,7 +9,7 @@ public class MemberRequestDto {
 
     @Getter
     @NoArgsConstructor
-    public static class CREATE {
+    public static class M_CREATE {
 
         private String email;
 
@@ -23,7 +23,7 @@ public class MemberRequestDto {
 
     @Getter
     @NoArgsConstructor
-    public static class UPDATE {
+    public static class M_UPDATE {
 
         private String password;
 
@@ -35,7 +35,7 @@ public class MemberRequestDto {
 
     @Getter
     @NoArgsConstructor
-    public static class CONDITION {
+    public static class M_CONDITION {
 
         private String email;
 
@@ -56,7 +56,7 @@ public class MemberRequestDto {
 
     @Getter
     @NoArgsConstructor
-    public static class DELETE {
+    public static class M_DELETE {
 
         private String email;
 
@@ -67,7 +67,7 @@ public class MemberRequestDto {
     @Getter
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class FIND {
+    public static class M_FIND {
 
         private String email;
 

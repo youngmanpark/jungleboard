@@ -18,19 +18,19 @@ public class BoardController {
     private final BoardService boardService;
 
     @PostMapping("/create")
-    public ResponseEntity<String> createBoard(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody BoardRequestDto.CREATE create) {
+    public ResponseEntity<String> createBoard(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestBody BoardRequestDto.B_CREATE create) {
         boardService.createBoard(userDetails.getUsername(), create);
         return ResponseEntity.ok("게시글이 작성되었습니다.");
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<String> updateBoard(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long id, @RequestBody BoardRequestDto.UPDATE update) {
+    public ResponseEntity<String> updateBoard(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Long id, @RequestBody BoardRequestDto.B_UPDATE update) {
         boardService.updateBoard(userDetails.getUsername(), id, update);
         return ResponseEntity.ok("게시글이 수정되었습니다.");
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<String> deleteBoard(@PathVariable Long id, @RequestBody BoardRequestDto.DELETE delete) {
+    public ResponseEntity<String> deleteBoard(@PathVariable Long id, @RequestBody BoardRequestDto.B_DELETE delete) {
         boardService.deleteBoard(id, delete);
         return ResponseEntity.ok("게시글이 삭제되었습니다.");
     }
