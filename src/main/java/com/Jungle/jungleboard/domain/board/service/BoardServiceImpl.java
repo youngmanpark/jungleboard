@@ -6,6 +6,10 @@ import com.Jungle.jungleboard.domain.board.entity.Board;
 import com.Jungle.jungleboard.domain.board.repository.BoardRepository;
 import com.Jungle.jungleboard.domain.member.entity.Member;
 import com.Jungle.jungleboard.domain.member.repository.MemberRepository;
+import com.Jungle.jungleboard.global.common.Role;
+import com.Jungle.jungleboard.global.exception.NotFoundException;
+import com.Jungle.jungleboard.global.exception.WrongPasswordException;
+import com.Jungle.jungleboard.global.model.ResponseStatus;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +17,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -25,44 +30,43 @@ public class BoardServiceImpl implements BoardService {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Override
-    public void createBoard(String username, BoardRequestDto.B_CREATE create) {
+    public BoardResponseDto.READ createBoard(String username, BoardRequestDto.B_CREATE create) {
 
         Member member = memberRepository.findMemberByUsernameAndDelYn(username, "N")
-                .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 없습니다."));
+                .orElseThrow(() -> new NotFoundException(ResponseStatus.FAIL_MEMBER_NOT_FOUND));
 
-        boardRepository.save(
-                new Board(create.getTitle(),
-                        create.getContent(),
-                        member,
-                        bCryptPasswordEncoder.encode(create.getPassword()),
-                        "N"));
+        Board board = new Board(create.getTitle(), create.getContent(), member
+                , bCryptPasswordEncoder.encode(create.getPassword()), "N");
 
+        boardRepository.save(board);
+
+        return BoardResponseDto.READ.of(board);
     }
 
     @Override
-    public void updateBoard(String username, Long id, BoardRequestDto.B_UPDATE update) {
+    public BoardResponseDto.READ updateBoard(String username, Role role, Long id, BoardRequestDto.B_UPDATE update) {
 
-        memberRepository.findMemberByUsernameAndDelYn(username, "N")
-                .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 없습니다."));
+        Member member = memberRepository.findMemberByUsernameAndDelYn(username, "N")
+                .orElseThrow(() -> new NotFoundException(ResponseStatus.FAIL_MEMBER_NOT_FOUND));
 
         Board board = boardRepository.findBoardByIdAndDelYn(id, "N")
-                .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다."));
+                .orElseThrow(() -> new NotFoundException(ResponseStatus.FAIL_BOARD_NOT_FOUND));
 
-        if (!bCryptPasswordEncoder.matches(update.getPassword(), board.getPassword()))
-            throw new IllegalArgumentException("비밀번호가 틀렸습니다.");
-
+        if (!isAuthorizedToUpdateOrDelete(role, board, update.getPassword()))
+            throw new WrongPasswordException(ResponseStatus.FAIL_BOARD_PASSWORD_NOT_MATCHED);
 
         board.updateBoard(update);
 
+        return BoardResponseDto.READ.of(board);
     }
 
     @Override
-    public void deleteBoard(Long id, BoardRequestDto.B_DELETE delete) {
+    public void deleteBoard(Role role, Long id, BoardRequestDto.B_DELETE delete) {
         Board board = boardRepository.findBoardByIdAndDelYn(id, "N")
-                .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다."));
+                .orElseThrow(() -> new NotFoundException(ResponseStatus.FAIL_BOARD_NOT_FOUND));
 
-        if (!bCryptPasswordEncoder.matches(delete.getPassword(), board.getPassword()))
-            throw new IllegalArgumentException("비밀번호가 틀렸습니다.");
+        if (!isAuthorizedToUpdateOrDelete(role, board, delete.getPassword()))
+            throw new WrongPasswordException(ResponseStatus.FAIL_BOARD_PASSWORD_NOT_MATCHED);
 
         board.delete();
     }
@@ -70,16 +74,9 @@ public class BoardServiceImpl implements BoardService {
     @Override
     public BoardResponseDto.READ getBoard(Long id) {
         Board board = boardRepository.findBoardByIdAndDelYn(id, "N")
-                .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다."));
+                .orElseThrow(() -> new NotFoundException(ResponseStatus.FAIL_BOARD_NOT_FOUND));
 
-        return BoardResponseDto.READ.builder()
-                .boardId(board.getId())
-                .title(board.getTitle())
-                .content(board.getContent())
-                .username(board.getMember().getUsername())
-                .createdAt(board.getCreatedAt())
-                .updatedAt(board.getUpdatedAt())
-                .build();
+        return BoardResponseDto.READ.of(board);
     }
 
     @Override
@@ -87,15 +84,14 @@ public class BoardServiceImpl implements BoardService {
         List<Board> boards = boardRepository.findAllByDelYn("N");
 
         return boards.stream()
-                .map(board -> BoardResponseDto.READ.builder()
-                        .boardId(board.getId())
-                        .title(board.getTitle())
-                        .content(board.getContent())
-                        .username(board.getMember().getUsername())
-                        .createdAt(board.getCreatedAt())
-                        .updatedAt(board.getUpdatedAt())
-                        .build())
-                .toList();
+                .map(BoardResponseDto.READ::of)
+                .collect(Collectors.toList());
+    }
 
+    private boolean isAuthorizedToUpdateOrDelete(Role role, Board board, String password) {
+        if (!(role.equals(Role.ROLE_ADMIN))) {
+            return bCryptPasswordEncoder.matches(password, board.getPassword());
+        }
+        return true;
     }
 }

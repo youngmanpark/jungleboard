@@ -2,16 +2,17 @@ package com.Jungle.jungleboard.domain.board.service;
 
 import com.Jungle.jungleboard.domain.board.dto.BoardRequestDto;
 import com.Jungle.jungleboard.domain.board.dto.BoardResponseDto;
+import com.Jungle.jungleboard.global.common.Role;
 
 import java.util.List;
 
 public interface BoardService {
 
-    void createBoard(String username, BoardRequestDto.B_CREATE create);
+    BoardResponseDto.READ createBoard(String username, BoardRequestDto.B_CREATE create);
 
-    public void updateBoard(String username, Long id, BoardRequestDto.B_UPDATE update);
+    public BoardResponseDto.READ updateBoard(String username, Role role, Long id, BoardRequestDto.B_UPDATE update);
 
-    public void deleteBoard(Long id, BoardRequestDto.B_DELETE delete);
+    public void deleteBoard(Role role, Long id, BoardRequestDto.B_DELETE delete);
 
     public BoardResponseDto.READ getBoard(Long id);
 

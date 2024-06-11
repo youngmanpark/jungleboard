@@ -2,6 +2,7 @@ package com.Jungle.jungleboard.domain.member.service;
 
 import com.Jungle.jungleboard.domain.member.dto.MemberRequestDto;
 import com.Jungle.jungleboard.domain.member.dto.MemberResponseDto;
+import jakarta.servlet.http.HttpServletResponse;
 
 import java.util.List;
 
@@ -22,7 +23,7 @@ public interface MemberService {
 
     public List<MemberResponseDto.READ> getAllMembers();
 
-    public MemberResponseDto.READ login(MemberRequestDto.LOGIN userRequestDto);
+    public MemberResponseDto.READ login(MemberRequestDto.LOGIN userRequestDto, HttpServletResponse response);
 
     public MemberResponseDto.READ adminGetMember(Long userId);
 

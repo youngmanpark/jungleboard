@@ -5,8 +5,13 @@ import com.Jungle.jungleboard.domain.board.repository.BoardRepository;
 import com.Jungle.jungleboard.domain.member.entity.Member;
 import com.Jungle.jungleboard.domain.member.repository.MemberRepository;
 import com.Jungle.jungleboard.domain.reply.dto.ReplyRequestDto;
+import com.Jungle.jungleboard.domain.reply.dto.ReplyResponseDto;
 import com.Jungle.jungleboard.domain.reply.entity.Reply;
 import com.Jungle.jungleboard.domain.reply.repository.ReplyRepository;
+import com.Jungle.jungleboard.global.common.Role;
+import com.Jungle.jungleboard.global.exception.NotFoundException;
+import com.Jungle.jungleboard.global.exception.WrongPasswordException;
+import com.Jungle.jungleboard.global.model.ResponseStatus;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,46 +30,55 @@ public class ReplyServiceImpl implements ReplyService {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
 
-    public void createReply(String username, ReplyRequestDto.R_CREATE create) {
+    public ReplyResponseDto.READ createReply(String username, ReplyRequestDto.R_CREATE create) {
         Member member = memberRepository.findMemberByUsernameAndDelYn(username, "N")
-                .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 없습니다."));
+                .orElseThrow(() -> new NotFoundException(ResponseStatus.FAIL_MEMBER_NOT_FOUND));
 
         Board board = boardRepository.findBoardByIdAndDelYn(create.getBoardId(), "N")
-                .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다."));
+                .orElseThrow(() -> new NotFoundException(ResponseStatus.FAIL_BOARD_NOT_FOUND));
 
-        replyRepository.save(
-                new Reply(member,
-                        board,
-                        create.getContent(),
-                        "N",
-                        bCryptPasswordEncoder.encode(create.getPassword())));
+        Reply reply = new Reply(member, board, create.getContent(),
+                bCryptPasswordEncoder.encode(create.getPassword()), "N");
+
+        replyRepository.save(reply);
+
+        return ReplyResponseDto.READ.of(reply);
     }
 
     @Override
-    public void updateReply(String username, Long id, ReplyRequestDto.R_UPDATE update) {
+    public ReplyResponseDto.READ updateReply(String username, Role role, Long id, ReplyRequestDto.R_UPDATE update) {
 
 
         Member member = memberRepository.findMemberByUsernameAndDelYn(username, "N")
-                .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 없습니다."));
+                .orElseThrow(() -> new NotFoundException(ResponseStatus.FAIL_MEMBER_NOT_FOUND));
 
         Reply reply = replyRepository.findReplyByIdAndDelYn(id, "N")
-                .orElseThrow(() -> new IllegalArgumentException("해당 댓글이 없습니다."));
+                .orElseThrow(() -> new NotFoundException(ResponseStatus.FAIL_REPLY_NOT_FOUND));
 
-        if (!bCryptPasswordEncoder.matches(update.getPassword(), reply.getPassword()))
-            throw new IllegalArgumentException("비밀번호가 틀렸습니다.");
+        if (!isAuthorizedToUpdateOrDelete(role, reply, update.getPassword()))
+            throw new WrongPasswordException(ResponseStatus.FAIL_BOARD_PASSWORD_NOT_MATCHED);
 
         reply.updateReply(update);
+
+        return ReplyResponseDto.READ.of(reply);
     }
 
     @Override
-    public void deleteReply(Long id, ReplyRequestDto.R_DELETE delete) {
+    public void deleteReply(Role role, Long id, ReplyRequestDto.R_DELETE delete) {
 
         Reply reply = replyRepository.findReplyByIdAndDelYn(id, "N")
-                .orElseThrow(() -> new IllegalArgumentException("해당 댓글이 없습니다."));
+                .orElseThrow(() -> new NotFoundException(ResponseStatus.FAIL_REPLY_NOT_FOUND));
 
-        if (!bCryptPasswordEncoder.matches(delete.getPassword(), reply.getPassword()))
-            throw new IllegalArgumentException("비밀번호가 틀렸습니다.");
+        if (!isAuthorizedToUpdateOrDelete(role, reply, delete.getPassword()))
+            throw new WrongPasswordException(ResponseStatus.FAIL_BOARD_PASSWORD_NOT_MATCHED);
 
         reply.delete();
+    }
+
+    private boolean isAuthorizedToUpdateOrDelete(Role role, Reply reply, String password) {
+        if (!(role.equals(Role.ROLE_ADMIN))) {
+            return bCryptPasswordEncoder.matches(password, reply.getPassword());
+        }
+        return true;
     }
 }

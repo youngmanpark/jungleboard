@@ -5,6 +5,12 @@ import com.Jungle.jungleboard.domain.member.dto.MemberResponseDto;
 import com.Jungle.jungleboard.domain.member.entity.Member;
 import com.Jungle.jungleboard.domain.member.repository.MemberRepository;
 import com.Jungle.jungleboard.global.auth.jwt.JwtProvider;
+import com.Jungle.jungleboard.global.exception.DuplicatedException;
+import com.Jungle.jungleboard.global.exception.InvalidRequestException;
+import com.Jungle.jungleboard.global.exception.NotFoundException;
+import com.Jungle.jungleboard.global.exception.WrongPasswordException;
+import com.Jungle.jungleboard.global.model.ResponseStatus;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,24 +33,33 @@ public class MemberServiceImpl implements MemberService {
 
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
+    private static final String USERNAME_PATTERN = "^[a-z0-9]{4,10}$";
+    private static final String PASSWORD_PATTERN = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,15}$";
+
 
     @Override
     public void createMember(MemberRequestDto.M_CREATE create) {
         Optional<Member> member = memberRepository.findByEmailAndUsername(create.getEmail(), create.getUsername());
         if (member.isPresent())
-            throw new IllegalArgumentException("이미 존재하는 회원입니다.");
+            throw new NotFoundException(ResponseStatus.FAIL_MEMBER_DUPLICATED);
 
-
-        memberRepository.save(new Member(create.getEmail(), bCryptPasswordEncoder.encode(create.getPassword()), create.getUsername(), ROLE_USER, "N"));
+        if (!create.getUsername().matches(USERNAME_PATTERN)) {
+            throw new InvalidRequestException(ResponseStatus.FAIL_MEMBER_USERNAME_INVALID);
+        }
+        if (!create.getPassword().matches(PASSWORD_PATTERN)) {
+            throw new InvalidRequestException(ResponseStatus.FAIL_MEMBER_PASSWORD_INVALID);
+        }
+        memberRepository.save(new Member(create.getEmail(), bCryptPasswordEncoder.encode(create.getPassword())
+                , create.getUsername(), ROLE_USER, "N"));
     }
 
     @Override
     public void updateMemberName(Long id, MemberRequestDto.M_UPDATE update) {
         Member member = memberRepository.findMemberByIdAndDelYn(id, "N")
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
+                .orElseThrow(() -> new NotFoundException(ResponseStatus.FAIL_MEMBER_NOT_FOUND));
 
         if (memberRepository.findByUsernameAndDelYn(update.getUsername(), "N").isPresent())
-            throw new IllegalArgumentException("이미 존재하는 회원입니다.");
+            throw new DuplicatedException(ResponseStatus.FAIL_MEMBER_USERNAME_DUPLICATED);
 
         member.updateName(update);
     }
@@ -52,7 +67,7 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public void updateMemberPassword(Long id, MemberRequestDto.M_UPDATE update) {
         Member member = memberRepository.findMemberByIdAndDelYn(id, "N")
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
+                .orElseThrow(() -> new NotFoundException(ResponseStatus.FAIL_MEMBER_NOT_FOUND));
 
         member.updatePassword(update);
     }
@@ -60,7 +75,7 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public void updateMemberRole(Long id, MemberRequestDto.M_UPDATE update) {
         Member member = memberRepository.findMemberByIdAndDelYn(id, "N")
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
+                .orElseThrow(() -> new NotFoundException(ResponseStatus.FAIL_MEMBER_NOT_FOUND));
 
         member.updateRole(update);
     }
@@ -68,10 +83,10 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public void deleteMember(Long id, MemberRequestDto.M_DELETE delete) {
         Member member = memberRepository.findMemberByIdAndDelYn(id, "N")
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
+                .orElseThrow(() -> new NotFoundException(ResponseStatus.FAIL_MEMBER_NOT_FOUND));
 
         if (!bCryptPasswordEncoder.matches(delete.getPassword(), member.getPassword()))
-            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+            throw new WrongPasswordException(ResponseStatus.FAIL_MEMBER_PASSWORD_NOT_MATCHED);
 
         member.delete();
     }
@@ -79,47 +94,32 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public MemberResponseDto.READ getMember(MemberRequestDto.M_FIND find) {
         Member member = memberRepository.findByEmailAndDelYn(find.getEmail(), "N")
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원 입니다."));
+                .orElseThrow(() -> new NotFoundException(ResponseStatus.FAIL_MEMBER_NOT_FOUND));
 
-        return MemberResponseDto.READ.builder()
-                .userId(member.getId())
-                .email(member.getEmail())
-                .username(member.getUsername())
-                .role(String.valueOf(member.getRole()))
-                .build();
+        return MemberResponseDto.READ.of(member);
     }
 
     @Override
     public List<MemberResponseDto.READ> getAllMembers() {
         return memberRepository.findAllByDelYn("N").stream()
-                .map(member -> MemberResponseDto.READ.builder()
-                        .userId(member.getId())
-                        .email(member.getEmail())
-                        .username(member.getUsername())
-                        .role(String.valueOf(member.getRole()))
-                        .build())
+                .map(MemberResponseDto.READ::of)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public MemberResponseDto.READ login(MemberRequestDto.LOGIN login) {
+    public MemberResponseDto.READ login(MemberRequestDto.LOGIN login, HttpServletResponse response) {
         Member member = memberRepository.findMemberByEmailAndDelYn(login.getEmail(), "N")
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
+                .orElseThrow(() -> new NotFoundException(ResponseStatus.FAIL_MEMBER_NOT_FOUND));
 
         if (!bCryptPasswordEncoder.matches(login.getPassword(), member.getPassword()))
-            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+            throw new WrongPasswordException(ResponseStatus.FAIL_MEMBER_PASSWORD_NOT_MATCHED);
 
         String token = JwtProvider.generateToken(member.getEmail(), member.getRole());
 
-        return MemberResponseDto.READ.builder()
-                .userId(member.getId())
-                .email(member.getEmail())
-                .username(member.getUsername())
-                .role(String.valueOf(member.getRole()))
-                .accessToken(token)
-                .build();
-    }
+        response.addHeader("Authorization", "Bearer " + token);
 
+        return MemberResponseDto.READ.of(member);
+    }
 
     @Override
     public MemberResponseDto.READ adminGetMember(Long userId) {
