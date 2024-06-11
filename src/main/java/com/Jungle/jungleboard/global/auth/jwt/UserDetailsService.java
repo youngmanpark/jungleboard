@@ -2,6 +2,8 @@ package com.Jungle.jungleboard.global.auth.jwt;
 
 import com.Jungle.jungleboard.domain.member.entity.Member;
 import com.Jungle.jungleboard.domain.member.repository.MemberRepository;
+import com.Jungle.jungleboard.global.exception.NotFoundException;
+import com.Jungle.jungleboard.global.model.ResponseStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -17,7 +19,7 @@ public class UserDetailsService implements org.springframework.security.core.use
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
         Member member = memberRepository.findByUsernameAndDelYn(username, "N")
-                .orElseThrow(() -> new UsernameNotFoundException("해당하는 유저를 찾을 수 없습니다"));
+                .orElseThrow(() -> new NotFoundException(ResponseStatus.FAIL_MEMBER_NOT_FOUND));
 
         return new CustomUserDetails(member);
     }
