@@ -45,7 +45,7 @@ public class Reply {
     private String delYn;
 
     @Builder
-    public Reply(Member member, Board board, String content, String delYn, String password) {
+    public Reply(Member member, Board board, String content, String password, String delYn) {
         this.member = member;
         this.board = board;
         this.content = content;

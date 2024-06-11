@@ -2,12 +2,15 @@ package com.Jungle.jungleboard.domain.board.entity;
 
 import com.Jungle.jungleboard.domain.board.dto.BoardRequestDto;
 import com.Jungle.jungleboard.domain.member.entity.Member;
+import com.Jungle.jungleboard.domain.reply.entity.Reply;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -31,6 +34,9 @@ public class Board {
 
     @Column(nullable = false, name = "board_password")
     private String password;
+
+    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
+    private List<Reply> replies = new ArrayList<>();
 
     @Column(nullable = false, name = "del_yn")
     private String delYn;
