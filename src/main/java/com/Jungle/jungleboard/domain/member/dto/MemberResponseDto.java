@@ -1,16 +1,13 @@
 package com.Jungle.jungleboard.domain.member.dto;
 
-import lombok.AllArgsConstructor;
+import com.Jungle.jungleboard.domain.member.entity.Member;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 public class MemberResponseDto {
 
     @Getter
     @Builder
-    @AllArgsConstructor
-    @NoArgsConstructor
     public static class READ {
 
         private Long userId;
@@ -23,12 +20,19 @@ public class MemberResponseDto {
 
         private String accessToken;
 
+        public static READ of(Member member) {
+            return READ.builder()
+                    .userId(member.getId())
+                    .email(member.getEmail())
+                    .username(member.getUsername())
+                    .role(String.valueOf(member.getRole()))
+                    .build();
+        }
+
 
     }
 
     @Getter
-    @AllArgsConstructor
-    @NoArgsConstructor
     public static class adminREAD {
 
         private Long userId;
