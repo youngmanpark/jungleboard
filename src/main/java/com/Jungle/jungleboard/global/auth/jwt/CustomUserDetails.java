@@ -1,6 +1,7 @@
 package com.Jungle.jungleboard.global.auth.jwt;
 
 import com.Jungle.jungleboard.domain.member.entity.Member;
+import com.Jungle.jungleboard.global.common.Role;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -19,6 +20,10 @@ public class CustomUserDetails implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return Collections.singletonList(new SimpleGrantedAuthority(String.valueOf(member.getRole())));
+    }
+
+    public Role getRole() {
+        return member.getRole();
     }
 
     @Override
