@@ -2,9 +2,11 @@ package com.Jungle.jungleboard.domain.member.controller;
 
 import com.Jungle.jungleboard.domain.member.dto.MemberRequestDto;
 import com.Jungle.jungleboard.domain.member.service.MemberService;
+import com.Jungle.jungleboard.global.model.CommonResponse;
+import com.Jungle.jungleboard.global.model.ResponseStatus;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -17,48 +19,48 @@ public class MemberController {
     private final MemberService memberService;
 
     @PostMapping("/join")
-    public ResponseEntity<String> createMember(@RequestBody MemberRequestDto.M_CREATE create) {
+    public CommonResponse<?> createMember(@RequestBody MemberRequestDto.M_CREATE create) {
         memberService.createMember(create);
-        return ResponseEntity.ok("회원 가입이 완료되었습니다.");
+        return CommonResponse.success(ResponseStatus.SUCCESS_CREATE);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody MemberRequestDto.LOGIN login) {
-        return ResponseEntity.ok(memberService.login(login));
+    public CommonResponse<?> login(@RequestBody MemberRequestDto.LOGIN login, HttpServletResponse response) {
+        return CommonResponse.success(ResponseStatus.SUCCESS_LOGIN, memberService.login(login, response));
     }
 
     @PutMapping("/update/name/{id}")
-    public ResponseEntity<String> updateMemberName(@PathVariable Long id, @RequestBody MemberRequestDto.M_UPDATE update) {
+    public CommonResponse<String> updateMemberName(@PathVariable Long id, @RequestBody MemberRequestDto.M_UPDATE update) {
         memberService.updateMemberName(id, update);
-        return ResponseEntity.ok("회원 정보가 수정되었습니다.");
+        return CommonResponse.success(ResponseStatus.SUCCESS_UPDATE);
     }
 
     @PutMapping("/update/password/{id}")
-    public ResponseEntity<String> updateMemberPassword(@PathVariable Long id, @RequestBody MemberRequestDto.M_UPDATE update) {
+    public CommonResponse<String> updateMemberPassword(@PathVariable Long id, @RequestBody MemberRequestDto.M_UPDATE update) {
         memberService.updateMemberPassword(id, update);
-        return ResponseEntity.ok("회원 정보가 수정되었습니다.");
+        return CommonResponse.success(ResponseStatus.SUCCESS_UPDATE);
     }
 
     @PutMapping("/update/role/{id}")
-    public ResponseEntity<String> updateMemberRole(@PathVariable Long id, @RequestBody MemberRequestDto.M_UPDATE update) {
+    public CommonResponse<String> updateMemberRole(@PathVariable Long id, @RequestBody MemberRequestDto.M_UPDATE update) {
         memberService.updateMemberRole(id, update);
-        return ResponseEntity.ok("회원 정보가 수정되었습니다.");
+        return CommonResponse.success(ResponseStatus.SUCCESS_UPDATE);
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<String> deleteMember(@PathVariable Long id, @RequestBody MemberRequestDto.M_DELETE delete) {
+    public CommonResponse<String> deleteMember(@PathVariable Long id, @RequestBody MemberRequestDto.M_DELETE delete) {
         memberService.deleteMember(id, delete);
-        return ResponseEntity.ok("회원 탈퇴가 완료되었습니다.");
+        return CommonResponse.success(ResponseStatus.SUCCESS_DELETE);
     }
 
     @GetMapping("/{email}")
-    public ResponseEntity<?> getMemberDetailByEmail(@PathVariable String email) {
-        return ResponseEntity.ok(memberService.getMember(new MemberRequestDto.M_FIND(email)));
+    public CommonResponse<?> getMemberDetailByEmail(@PathVariable String email) {
+        return CommonResponse.success(ResponseStatus.SUCCESS_OK, memberService.getMember(new MemberRequestDto.M_FIND(email)));
     }
 
     @GetMapping("/all")
-    public ResponseEntity<?> getMemberAll() {
-        return ResponseEntity.ok(memberService.getAllMembers());
+    public CommonResponse<?> getMemberAll() {
+        return CommonResponse.success(ResponseStatus.SUCCESS_OK, memberService.getAllMembers());
     }
 
 }
